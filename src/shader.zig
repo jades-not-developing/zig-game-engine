@@ -1,6 +1,7 @@
 const std = @import("std");
 const c = @import("c.zig");
-const Vec3 = @import("vec3.zig").Vec3;
+const math = @import("math/main.zig");
+const Vec3 = math.Vec3;
 const fs = @import("./fs.zig");
 
 const GL_COMPILE_SUCCESS = 0x8B81;

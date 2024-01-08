@@ -4,12 +4,12 @@ const Shader = @import("shader.zig").Shader;
 const Mesh = @import("mesh.zig").Mesh;
 const engine = @import("engine.zig");
 const Engine = engine.Engine;
-const Vec3 = @import("math/vec3.zig").Vec3;
+const math = @import("math/main.zig");
 
 const mach = @import("mach");
 
 pub fn main() !void {
-    const v = Vec3.new(0.0, 0.0, 0.0);
+    const v = math.Vec3(f32).new(0.0, 0.0, 0.0);
     v.print();
 
     var engine_instance = Engine.new();
