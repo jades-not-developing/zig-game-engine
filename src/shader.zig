@@ -101,6 +101,11 @@ pub const Shader = struct {
         c.glUseProgram(0);
     }
 
+    pub fn deinit(self: *@This()) void {
+        c.glDeleteProgram(self.id);
+        self.uniform_cache.deinit();
+    }
+
     pub fn uniform_vec3(self: *@This(), location: []const u8, vec: Vec3(f32)) !void {
         c.glUniform3f(
             try self.uniform_location(location),

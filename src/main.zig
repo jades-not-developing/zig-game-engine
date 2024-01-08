@@ -68,7 +68,8 @@ pub fn main() !void {
     try mesh_2.init();
     defer mesh_2.deinit();
 
-    const shader = try Shader.from_source(@embedFile("vert.glsl"), @embedFile("frag.glsl"));
+    var shader = try Shader.from_source(@embedFile("vert.glsl"), @embedFile("frag.glsl"));
+    defer shader.deinit();
 
     while (!engine_instance.close_requested()) {
         engine_instance.clear();
