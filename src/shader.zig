@@ -15,6 +15,8 @@ const ShaderType = enum {
 pub const Shader = struct {
     id: c_uint,
     uniform_cache: std.StringHashMap(c_int),
+    vertex_source: []const u8,
+    fragment_source: []const u8,
 
     pub fn from_source(vertex_source: []const u8, fragment_source: []const u8) !@This() {
         const vsh = try gen_vertex_shader(vertex_source);
@@ -43,6 +45,8 @@ pub const Shader = struct {
         return @This(){
             .id = program,
             .uniform_cache = std.StringHashMap(c_int).init(std.heap.page_allocator),
+            .fragment_source = fragment_source,
+            .vertex_source = vertex_source,
         };
     }
 
@@ -82,6 +86,8 @@ pub const Shader = struct {
         return @This(){
             .id = program,
             .uniform_cache = std.StringHashMap(c_int).init(std.heap.page_allocator),
+            .fragment_source = fragment_file_source,
+            .vertex_source = vertex_file_source,
         };
     }
 
