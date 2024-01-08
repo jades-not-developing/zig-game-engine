@@ -4,12 +4,18 @@ const Shader = @import("shader.zig").Shader;
 const Mesh = @import("mesh.zig").Mesh;
 const engine = @import("engine.zig");
 const Engine = engine.Engine;
+const Vec3 = @import("math/vec3.zig").Vec3;
+
+const mach = @import("mach");
 
 pub fn main() !void {
+    const v = Vec3.new(0.0, 0.0, 0.0);
+    v.print();
+
     var engine_instance = Engine.new();
     defer engine_instance.deinit();
 
-    const vertices: []const f32 = &[_]f32{
+    const mesh_1_vertices: []const f32 = &[_]f32{
         0.0, 0.0, 0.0,
         1.0, 0.0, 0.0,
         0.0, 1.0, 0.0,
@@ -20,7 +26,7 @@ pub fn main() !void {
         1.0, 1.0, 1.0,
     };
 
-    const indices: []const u32 = &[_]u32{
+    const mesh_1_indices: []const u32 = &[_]u32{
         // front
         0, 1, 2,
         2, 3, 0,
@@ -46,9 +52,21 @@ pub fn main() !void {
         6, 7, 3,
     };
 
-    var mesh = try Mesh.new(vertices, indices);
-    try mesh.init();
-    defer mesh.deinit();
+    const mesh_2_vertices: []const f32 = &[_]f32{
+        -0.5, -0.5, 0.0,
+        0.5,  -0.5, 0.0,
+        0.0,  0.5,  0.0,
+    };
+
+    const mesh_2_indices: []const u32 = &[_]u32{ 0, 1, 2 };
+
+    var mesh_1 = try Mesh.new(mesh_1_vertices, mesh_1_indices);
+    try mesh_1.init();
+    defer mesh_1.deinit();
+
+    var mesh_2 = try Mesh.new(mesh_2_vertices, mesh_2_indices);
+    try mesh_2.init();
+    defer mesh_2.deinit();
 
     const shader = try Shader.from_source(@embedFile("vert.glsl"), @embedFile("frag.glsl"));
 
@@ -56,11 +74,15 @@ pub fn main() !void {
         engine_instance.clear();
 
         shader.use();
-        mesh.bind();
 
-        c.glDrawElements(c.GL_TRIANGLES, indices.len, c.GL_UNSIGNED_INT, null);
+        mesh_1.bind();
+        mesh_1.render();
+        mesh_1.unbind();
 
-        mesh.unbind();
+        mesh_2.bind();
+        mesh_2.render();
+        mesh_2.unbind();
+
         shader.stop();
 
         engine_instance.swap_buffers();

@@ -49,6 +49,10 @@ pub const Mesh = struct {
         self.unbind();
     }
 
+    pub fn render(self: *Self) void {
+        c.glDrawElements(c.GL_TRIANGLES, @as(i32, @intCast(self.indices.?.items.len)), c.GL_UNSIGNED_INT, null);
+    }
+
     pub fn bind(self: Self) void {
         c.glBindVertexArray(self.vao);
         c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, self.ibo);
