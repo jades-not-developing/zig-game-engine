@@ -44,10 +44,13 @@ pub fn main() !void {
     }
 
     const vertices = [_]f32{
-        -0.5, -0.5, 0.0,
+        0.5,  0.5,  0.0,
         0.5,  -0.5, 0.0,
-        0.0,  0.5,  0.0,
+        -0.5, -0.5, 0.0,
+        -0.5, 0.5,  0.0,
     };
+
+    const indices = [_]u32{ 0, 1, 3, 1, 2, 3 };
 
     var vao: c_uint = undefined;
     c.glGenVertexArrays(1, &vao);
@@ -60,7 +63,13 @@ pub fn main() !void {
     c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 3 * @sizeOf(f32), null);
     c.glEnableVertexAttribArray(0);
 
+    var ibo: c_uint = undefined;
+    c.glGenBuffers(1, &ibo);
+    c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ibo);
+    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, indices.len * @sizeOf(u32), &indices, c.GL_STATIC_DRAW);
+
     c.glBindBuffer(c.GL_ARRAY_BUFFER, 0);
+    c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, 0);
     c.glBindVertexArray(0);
 
     const vertShaderSource: []const u8 = @embedFile("vert.glsl");
@@ -77,7 +86,8 @@ pub fn main() !void {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
 
         c.glBindVertexArray(vao);
-        c.glDrawArrays(c.GL_TRIANGLES, 0, 3);
+        c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ibo);
+        c.glDrawElements(c.GL_TRIANGLES, indices.len, c.GL_UNSIGNED_INT, null);
 
         shader.stop();
 
