@@ -38,7 +38,7 @@ const Mesh = struct {
         return mesh;
     }
 
-    pub fn initAndBind(self: *Self) !void {
+    pub fn init(self: *Self) !void {
         c.glGenVertexArrays(1, &self.vao);
         c.glBindVertexArray(self.vao);
 
@@ -51,6 +51,8 @@ const Mesh = struct {
         c.glGenBuffers(1, &self.ibo);
         c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, self.ibo);
         c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, self.indexCount * @sizeOf(u32), &self.indices, c.GL_STATIC_DRAW);
+
+        self.unbind();
     }
 
     pub fn bind(self: Self) void {
@@ -92,24 +94,23 @@ pub fn main() !void {
         std.debug.panic("Failed to initalize GLEW", .{});
     }
 
-    const vertices = [_]f32{
+    const vertices: []const f32 = &[_]f32{
         0.5,  0.5,  0.0,
         0.5,  -0.5, 0.0,
         -0.5, -0.5, 0.0,
         -0.5, 0.5,  0.0,
     };
 
-    const indices = [_]u32{ 0, 1, 3, 1, 2, 3 };
+    const indices: []const u32 = &[_]u32{ 0, 1, 3, 1, 2, 3 };
 
-    var mesh = Mesh.new(@ptrCast(&vertices), @ptrCast(&indices));
-    try mesh.initAndBind();
+    var mesh = Mesh.new(vertices, indices);
+    try mesh.init();
 
     const vertShaderSource: []const u8 = @embedFile("vert.glsl");
     const fragShaderSource: []const u8 = @embedFile("frag.glsl");
 
     const shader = try Shader.from_source(vertShaderSource, fragShaderSource);
 
-    mesh.unbind();
     while (c.glfwWindowShouldClose(window) == 0) {
         c.glfwPollEvents();
 
