@@ -53,7 +53,7 @@ pub fn main() !void {
 
     const indices: []const u32 = &[_]u32{ 0, 1, 3, 1, 2, 3 };
 
-    var mesh = Mesh.new(vertices, indices);
+    var mesh = try Mesh.new(vertices, indices);
     try mesh.init();
     defer mesh.deinit();
 

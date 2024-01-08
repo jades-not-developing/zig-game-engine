@@ -1,9 +1,10 @@
 const std = @import("std");
 const c = @import("c.zig");
+const Allocator = std.mem.Allocator;
 
 pub const Mesh = struct {
-    vertices: [1024]f32 = [1]f32{0} ** 1024,
-    indices: [1024]u32 = [1]u32{0} ** 1024,
+    vertices: ?std.ArrayList(f32) = null,
+    indices: ?std.ArrayList(u32) = null,
 
     vertexCount: u32 = 0,
     indexCount: u32 = 0,
@@ -12,12 +13,19 @@ pub const Mesh = struct {
     vbo: u32 = undefined,
     ibo: u32 = undefined,
 
+    gpa: std.heap.GeneralPurposeAllocator(.{}) = .{},
+
     const Self = @This();
 
-    pub fn new(vertices: []const f32, indices: []const u32) @This() {
+    pub fn new(vertices: []const f32, indices: []const u32) !@This() {
         var mesh: @This() = .{};
-        std.mem.copyForwards(f32, mesh.vertices[0..vertices.len], vertices);
-        std.mem.copyForwards(u32, mesh.indices[0..indices.len], indices);
+        const alloc = mesh.gpa.allocator();
+        mesh.vertices = std.ArrayList(f32).init(alloc);
+        mesh.indices = std.ArrayList(u32).init(alloc);
+
+        try mesh.vertices.?.appendSlice(vertices);
+        try mesh.indices.?.appendSlice(indices);
+
         mesh.vertexCount = @as(u32, @truncate(vertices.len));
         mesh.indexCount = @as(u32, @truncate(indices.len));
 
@@ -30,13 +38,13 @@ pub const Mesh = struct {
 
         c.glGenBuffers(1, &self.vbo);
         c.glBindBuffer(c.GL_ARRAY_BUFFER, self.vbo);
-        c.glBufferData(c.GL_ARRAY_BUFFER, self.vertexCount * @sizeOf(f32), &self.vertices, c.GL_STATIC_DRAW);
+        c.glBufferData(c.GL_ARRAY_BUFFER, @as(u32, @intCast(self.vertices.?.items.len)) * @sizeOf(f32), self.vertices.?.items.ptr, c.GL_STATIC_DRAW);
         c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 3 * @sizeOf(f32), null);
         c.glEnableVertexAttribArray(0);
 
         c.glGenBuffers(1, &self.ibo);
         c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, self.ibo);
-        c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, self.indexCount * @sizeOf(u32), &self.indices, c.GL_STATIC_DRAW);
+        c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @as(u32, @intCast(self.indices.?.items.len)) * @sizeOf(u32), self.indices.?.items.ptr, c.GL_STATIC_DRAW);
 
         self.unbind();
     }
